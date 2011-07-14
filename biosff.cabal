@@ -1,0 +1,27 @@
+Name:                biosff
+Version:             0
+Synopsis:            Library and executables for working with SFF files
+-- Description:         
+Homepage:            http://biohaskell.org/
+License:             LGPL
+Author:              Ketil Malde
+Maintainer:          ketil@malde.org
+Stability:           Experimental
+Category:            Bioinformatics
+Build-type:          Simple
+Cabal-version:       >=1.2
+
+Library
+  Exposed-modules: Bio.Sequence.SFF
+  Other-modules:   Bio.Sequence.SFF_name, Bio.Sequence.SFF_filters
+  Build-depends:   base >= 3 && < 5, biocore, binary < 0.5, bytestring, array
+  Hs-Source-Dirs:  src
+
+Executable flower
+  Main-Is:         Flower.hs
+  Build-Depends:   base >= 3 && < 5, cmdargs, mtl >= 2
+  Hs-Source-Dirs:  src
+
+-- Executable flowt
+
+-- Executable flowselect  
