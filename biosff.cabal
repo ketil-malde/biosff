@@ -18,10 +18,10 @@ Library
   Hs-Source-Dirs:  src
 
 Executable flower
-  Main-Is:         Flower.hs
+  Main-Is:         Main.hs
   Other-Modules:   Fork, Options, Metrics, Print
   Build-Depends:   base >= 3 && < 5, cmdargs, mtl >= 2
-  Hs-Source-Dirs:  src
+  Hs-Source-Dirs:  src, src/Flower
 
 -- Executable flowt
 
