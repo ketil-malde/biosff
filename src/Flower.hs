@@ -3,14 +3,12 @@ module Main (main) where
 
 import Bio.Sequence.SFF
 import Bio.Sequence.SFF_filters
--- import Bio.Sequence.FastQ (hWriteSangerQ,hWriteIllumina)
 import Bio.Core
 
 import Print
 import Text.Printf
 
 import System.IO (stdout, Handle, openFile, IOMode(..), hClose, hPutStrLn)
--- import System.Environment (getArgs)
 
 import Numeric (showFFloat)
 import Data.Char (toLower)
