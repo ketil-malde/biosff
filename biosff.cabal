@@ -19,6 +19,7 @@ Library
 
 Executable flower
   Main-Is:         Flower.hs
+  Other-Modules:   Fork, Options, Metrics, Print
   Build-Depends:   base >= 3 && < 5, cmdargs, mtl >= 2
   Hs-Source-Dirs:  src
 
