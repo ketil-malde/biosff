@@ -36,7 +36,7 @@ import qualified Data.ByteString.Lazy.Char8 as LBC
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.ByteString (ByteString)
-import Control.Monad (when,replicateM,replicateM_,liftM)
+import Control.Monad (when,replicateM,replicateM_)
 
 import Data.List (intersperse)
 import Data.Binary
@@ -74,12 +74,12 @@ trimKey ch (Seq n s q) = let (k,s2) = LB.splitAt (fromIntegral $ key_length ch) 
 -}
 
 instance BioSeq ReadBlock where
-  seqlabel rb = LB.fromChunks [read_name $ read_header rb]
+  seqlabel rb = SeqLabel $ LB.fromChunks [read_name $ read_header rb]
   seqdata  rb = let h = read_header rb
                     (left,right) = (clip_qual_left h, clip_qual_right h)
-                    (a,b) = LB.splitAt (fromIntegral right) $ bases rb
+                    (a,b) = LB.splitAt (fromIntegral right) $ unSD $ bases rb
                     (c,d) = LB.splitAt (fromIntegral left-1) a
-                in LBC.concat [LBC.map toLower c, LBC.map toUpper d,LBC.map toLower b]
+                in SeqData $ LBC.concat [LBC.map toLower c, LBC.map toUpper d,LBC.map toLower b]
   seqlength rb = fromIntegral $ num_bases $ read_header rb
 
 instance BioSeqQual ReadBlock where
@@ -107,8 +107,8 @@ trimFlows l rb = rb { read_header = rh { num_bases = fromIntegral n
                                        }
                     , flow_data   = B.take (2*fromIntegral l) (flow_data rb)
                     , flow_index  = B.take n (flow_index rb)
-                    , bases       = LB.take (fromIntegral n) (bases rb)
-                    , quality     = LB.take (fromIntegral n) (quality rb)
+                    , bases       = SeqData $ LB.take (fromIntegral n) (unSD $ bases rb)
+                    , quality     = QualData $ LB.take (fromIntegral n) (unQD $ quality rb)
                     }
   where n = (flowToBasePos rb l)-1
         rh = read_header rb
@@ -135,8 +135,8 @@ trimFromTo x r rd = let
   in rd { read_header = rh'
         , flow_data = B.concat [new_flw, padding]
         , flow_index = trim_seq' (flow_index rd)
-        , bases = trim_seq (bases rd)
-        , quality = trim_seq (quality rd)
+        , bases = SeqData $ trim_seq $ unSD $ bases rd
+        , quality = QualData $ trim_seq $ unQD $ quality rd
         }
 
 -- | Trim a read according to clipping information
@@ -248,7 +248,7 @@ getRB chead rh = do
   qty <- getLazyByteString nb'
   let l = (fl*2+nb*3) `mod` 8
   when (l > 0) (skip (8-l))
-  return (ReadBlock rh fg fi bs qty)
+  return (ReadBlock rh fg fi (SeqData bs) (QualData qty))
 
 -- | A ReadBlock can't be an instance of Binary directly, since it depends on
 --   information from the CommonHeader.
@@ -259,8 +259,8 @@ putRB fl rb = do
   -- ensure that flowgram has correct lenght
   replicateM_ (2*fl-B.length (flow_data rb)) (put (0::Word8))
   putByteString (flow_index rb)
-  putLazyByteString (bases rb)
-  putLazyByteString (quality rb)
+  putLazyByteString (unSD $ bases rb)
+  putLazyByteString (unQD $ quality rb)
   let nb = fromIntegral $ num_bases $ read_header rb
       l = (fl*2+nb*3) `mod` 8
   when (l > 0) (pad (8-l))
@@ -389,8 +389,8 @@ masked_bases :: ReadBlock -> SeqData
 masked_bases rb = let
   l = fromIntegral $ clip_qual_left $ read_header rb
   r = fromIntegral $ clip_qual_right $ read_header rb
-  s = bases rb
-  in LBC.concat [ LBC.map toLower $ LBC.take (l-1) s
+  SeqData s = bases rb
+  in SeqData $ LBC.concat [ LBC.map toLower $ LBC.take (l-1) s
                 , LBC.take r (LBC.drop (l-1) s)
                 , LBC.map toLower $ LBC.drop r s]
 
@@ -399,7 +399,7 @@ cumulative_index :: ReadBlock -> [Int]
 cumulative_index = scanl1 (+) . map fromIntegral . B.unpack . flow_index
 
 instance Show ReadBlock where
-    show (ReadBlock h f i b q) =
+    show (ReadBlock h f i (SeqData b) (QualData q)) =
         show h ++ unlines (map ("     "++) 
             ["flowgram:\t"++show (unpackFlows f)
             , "index:\t"++(concat . intersperse " " . map show . B.unpack) i
