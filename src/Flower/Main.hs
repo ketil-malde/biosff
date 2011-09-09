@@ -83,8 +83,8 @@ dumpText rs = concat . map toText $ rs
                           , clip,     show (clip_qual_left rh), sp, show (clip_qual_right rh), nl
                           , flows,    B.unpack $ B.unwords $ map fi $ flowgram r, nl
                           , idx,      unwords $ map show $ cumulative_index' r, nl
-                          , base,     L.unpack (seqdata r), nl
-                          , qual,     unwords $ map show $ L1.unpack (quality r), nl
+                          , base,     L.unpack (unSD $ seqdata r), nl
+                          , qual,     unwords $ map show $ L1.unpack (unQD $ quality r), nl
                              ]
           where rh = read_header r
                 gt = ">"
@@ -147,7 +147,7 @@ sum1 r = let rh = read_header r
                      ++ [putInt (fromIntegral nb)
                         , fromByteString (fi $ quals $ flowgram r), fromByteString (fi $ quals $ flowgram tr)
                         , putInt (n_count r)
-                        , avg_qual $ quality r, avg_qual $ quality tr]) ++ [nl]
+                        , avg_qual $ unQD $ quality r, avg_qual $ unQD $ quality tr]) ++ [nl]
 
 -- ----------------------------------------------------------
 -- The --filters option, summarize filters
@@ -187,7 +187,7 @@ showread :: CommonHeader -> ReadBlock -> [ByteString]
 showread h rd = let rh = read_header rd
                     rn = read_name rh
                     maskFlows = mask rh 1 qgroups . unpack 
-                    qgroups = qgroup (B1.unpack $ flow_index rd) (L1.unpack $ quality rd)
+                    qgroups = qgroup (B1.unpack $ flow_index rd) (map Qual $ L1.unpack $ unQD $ quality rd)
                     format p c v q = B.concat [rn,tab,B.pack (show p),tab,B.pack [c],tab,fi v,tab,B.pack (init $ drop 1 $ show q)]
                 in zipWith4 format [(1::Int)..] (maskFlows $ flow h) (flowgram rd) qgroups
 

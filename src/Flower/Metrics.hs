@@ -2,6 +2,7 @@
 
 module Metrics where
 
+import Bio.Core
 import Bio.Sequence.SFF
 import qualified Data.ByteString.Lazy.Char8 as B
 
@@ -15,7 +16,7 @@ quals q = floor $ ((100::Double) - 2*(sqrt $ (/fromIntegral (length q)) $ sum $ 
 --   The algorithm for generating Ns is a bit opaque, and appears to depend on the magnitude 
 --   of the noise flow values.  We chicken out, and just count the called sequence.
 n_count :: ReadBlock -> Int
-n_count r = length . filter isN . clip . B.unpack . bases $ r
+n_count r = length . filter isN . clip . B.unpack . unSD . bases $ r
     where isN x = x=='N' || x == 'n'
           clip = take (right-left+1) . drop left
           right = fromIntegral $ clip_qual_right (read_header r)

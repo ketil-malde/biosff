@@ -4,6 +4,8 @@ module Bio.Sequence.SFF_filters where
 
 import Bio.Sequence.SFF (ReadBlock(..), ReadHeader(..)
                         , flowToBasePos, flowgram, cumulative_index)
+
+import Bio.Core.Sequence
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy.Char8 as BL
@@ -25,14 +27,14 @@ discard_empty rb = num_bases (read_header rb) >= 5
 -- | Discard sequences that don't have the given key tag (typically TCAG) at the start
 --   of the read.
 discard_key :: String -> DiscardFilter
-discard_key key rb = (map toUpper key==) $ take (length key) $ BL.unpack $ bases rb
+discard_key key rb = (map toUpper key==) $ take (length key) $ BL.unpack $ unSD $ bases rb
 
 -- | 3.2.2.1.2 The "dots" filter discards sequences where the last positive flow is 
 --   before flow 84, and flows with >5% dots (i.e. three successive noise values) 
 --   before the last postitive flow.  The percentage can be given as a parameter.
 discard_dots :: Double -> DiscardFilter
 discard_dots p rb = let dotcount = SB.length $ SB.filter (>3) $ flow_index rb
-                    in fromIntegral dotcount / fromIntegral (BL.length $ bases rb) < p
+                    in fromIntegral dotcount / fromIntegral (BL.length $ unSD $ bases rb) < p
                        && last (cumulative_index rb) >= 84
 
 -- | 3.2.2.1.3 The "mixed" filter discards sequences with more than 70% positive flows.  
@@ -81,7 +83,7 @@ find_primer s rb = go (num_bases (read_header rb) - 10)
   where go i | i <= 5    = fromIntegral (num_bases $ read_header rb)
              | match i   = fromIntegral i
              | otherwise = go (i-1)
-        match j = s' `B.isPrefixOf` B.drop (fromIntegral j) (bases rb)
+        match j = s' `B.isPrefixOf` B.drop (fromIntegral j) (unSD $ bases rb)
         s' = BL.pack $ map toUpper $ take 14 s
 
 -- 3.2.2.1.6 Trimback valley filter is ignored, we don't understand the description.
@@ -92,7 +94,7 @@ trim_qual20 w rs = clipSeq rs $ qual20 w rs
 
 qual20 :: Int -> ReadBlock -> Int
 qual20 w rs = (fromIntegral $ num_bases $ read_header rs)
-              - (length . takeWhile (<20) . map (avg . take w) . tails . reverse . B.unpack $ quality rs)
+              - (length . takeWhile (<20) . map (avg . take w) . tails . reverse . B.unpack $ unQD $ quality rs)
 
 -- ** Utility functions
 
