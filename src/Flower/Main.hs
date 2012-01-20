@@ -52,7 +52,8 @@ buildActions o = let
       on (O.fastq o)     (\h -> mapM_ (L1.hPut h . L1.concat . map toFastQ . tr . rs) =<< inp)
       on (O.summarize o) (\h -> mapM_ (L1.hPut h . summarize . tr . rs) =<< inp)  -- should we trim?
       on (O.filters o)   (\h -> mapM_ (L1.hPut h . sum_filters . rs) =<< inp)
-      on (O.histogram o) (\h -> mapM_ (\(SFF c r) -> hPutStrLn h . showHist . histogram (B.unpack $ flow c) . map flowgram . tr $ r) =<< inp)
+      on (O.histogram o) (\h -> mapM_ (\(SFF c r) -> hPutStrLn h . showHist 9999 ["A","C","G","T"] . histogram (B.unpack $ flow c) . map flowgram . tr $ r) =<< inp)
+      on (O.histpos o) (\h -> mapM_ (\(SFF _ r) -> hPutStrLn h . showHist 549 [] . histpos 549 . tr $ r) =<< inp)
       on (O.flowgram o)  (\h -> mapM_ (\(SFF c r) -> L1.hPut h . L1.fromChunks . intersperse (B.pack "\n") . concatMap (showread c) $ r) =<< inp)
 
 on :: Maybe FilePath -> (Handle -> Action) -> State [Action] ()
@@ -219,7 +220,7 @@ qgroup _ _ = error "internal error in 'qgroup'"
 
 type Hist = UArray Flow Int
 
-histogram :: String -> [[Flow]] -> (Hist,Hist,Hist,Hist)
+histogram :: String -> [[Flow]] -> [Hist]
 histogram fl scores = runST $ do 
   let zero = newArray (0,9999) 0 :: ST s (STUArray s Flow Int)
   a <- zero
@@ -237,9 +238,24 @@ histogram fl scores = runST $ do
   c' <- unsafeFreeze c
   g' <- unsafeFreeze g
   t' <- unsafeFreeze t
-  return (a',c',g',t')
+  return [a',c',g',t']
 
+{-
 showHist :: (Hist,Hist,Hist,Hist) -> String
 showHist (as,cs,gs,ts) = "Score\tA\tC\tG\tT\tsum\n" ++ 
     unlines [concat $ intersperse "\t" $ showFFloat (Just 2) (fromIntegral sc/100::Double) "" : map show [as!sc,cs!sc,gs!sc,ts!sc, as!sc+cs!sc+gs!sc+ts!sc]
                  | sc <- [0..9999]] 
+-}
+
+showHist :: Int -> [String] -> [Hist] -> String
+showHist mx hd hs = concat (intersperse "\t" ("Score":hd)) ++ "\n" ++
+                    unlines [concat $ intersperse "\t" $ showFFloat (Just 2) (fromIntegral sc/100::Double) "" : [show (h!sc) | h <- hs] | sc <- [0..fromIntegral mx]]
+
+histpos :: Int -> [ReadBlock] -> [Hist]
+histpos mx scores = runST $ do 
+  let mx' = fromIntegral mx
+      zero = newArray (0,mx') 0 :: ST s (STUArray s Flow Int)
+  hs <- sequence $ replicate (length $ flowgram $ head scores) zero
+  let bump ar i = when (i>=0 && i<= mx') (readArray ar i >>= \x -> writeArray ar i (x+1))
+  sequence_ $ concatMap (zipWith bump hs . flowgram) scores
+  mapM unsafeFreeze hs

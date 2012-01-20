@@ -17,6 +17,7 @@ data Opts = Opts
             , fastq   :: Maybe FilePath
             , flowgram :: Maybe FilePath
             , histogram :: Maybe FilePath
+            , histpos :: Maybe FilePath
             , inputs :: [FilePath]
             , text   :: Maybe FilePath
             } deriving (Data,Typeable, Show, Eq)
@@ -35,7 +36,8 @@ opts = Opts
   , fqual    = def   &= help "Output phred qualities"                      &= typFile &= name "q" &= optdef
   , fastq = def   &= help "Output FastQ-formatted sequence and Sanger quality" &= typFile &= name "Q" &= optdef
   , flowgram = def  &= help "Output flowgram information in tabular form" &= typFile &= name "F" &= optdef
-  , histogram = def &= help "Output histogram of flow values"             &= typFile &= name "h" &= optdef
+  , histogram = def &= help "Output histogram of flow values by nucleotide" &= typFile &= name "h" &= optdef
+  , histpos   = def &= help "Output histogram of flow values by flow cycle" &= typFile &= name "H" &= optdef
   , text      = def &= help "Output SFF information as text (default)"    &= typFile &= name "T" &= optdef
   , inputs  = def &= args &= typFile
   } 
