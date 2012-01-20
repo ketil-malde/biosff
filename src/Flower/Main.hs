@@ -53,7 +53,7 @@ buildActions o = let
       on (O.summarize o) (\h -> mapM_ (L1.hPut h . summarize . tr . rs) =<< inp)  -- should we trim?
       on (O.filters o)   (\h -> mapM_ (L1.hPut h . sum_filters . rs) =<< inp)
       on (O.histogram o) (\h -> mapM_ (\(SFF c r) -> hPutStrLn h . showHist 9999 ["A","C","G","T"] . histogram (B.unpack $ flow c) . map flowgram . tr $ r) =<< inp)
-      on (O.histpos o) (\h -> mapM_ (\(SFF _ r) -> hPutStrLn h . showHist 549 [] . histpos 549 . tr $ r) =<< inp)
+      on (O.histpos o)   (\h -> mapM_ (\(SFF _ r) -> hPutStrLn h . showHist 549 [] . histpos 549 . tr $ r) =<< inp)
       on (O.flowgram o)  (\h -> mapM_ (\(SFF c r) -> L1.hPut h . L1.fromChunks . intersperse (B.pack "\n") . concatMap (showread c) $ r) =<< inp)
 
 on :: Maybe FilePath -> (Handle -> Action) -> State [Action] ()
@@ -240,15 +240,8 @@ histogram fl scores = runST $ do
   t' <- unsafeFreeze t
   return [a',c',g',t']
 
-{-
-showHist :: (Hist,Hist,Hist,Hist) -> String
-showHist (as,cs,gs,ts) = "Score\tA\tC\tG\tT\tsum\n" ++ 
-    unlines [concat $ intersperse "\t" $ showFFloat (Just 2) (fromIntegral sc/100::Double) "" : map show [as!sc,cs!sc,gs!sc,ts!sc, as!sc+cs!sc+gs!sc+ts!sc]
-                 | sc <- [0..9999]] 
--}
-
 showHist :: Int -> [String] -> [Hist] -> String
-showHist mx hd hs = concat (intersperse "\t" ("Score":hd)) ++ "\n" ++
+showHist mx hd hs = (if not (null hd) then concat (intersperse "\t" ("Score":hd)) ++ "\n" else "") ++
                     unlines [concat $ intersperse "\t" $ showFFloat (Just 2) (fromIntegral sc/100::Double) "" : [show (h!sc) | h <- hs] | sc <- [0..fromIntegral mx]]
 
 histpos :: Int -> [ReadBlock] -> [Hist]

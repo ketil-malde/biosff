@@ -48,7 +48,7 @@ getArgs :: IO Opts
 getArgs = do
   o <- cmdArgs opts 
   -- print o
-  let outs = filter isJust $ map ($o) [summarize,filters,info,fasta,fqual,fastq,flowgram,histogram,text]
+  let outs = filter isJust $ map ($o) [summarize,filters,info,fasta,fqual,fastq,flowgram,histogram,histpos,text]
   when ((length $ filter (==Just "-") $ outs) > 1) $ error "If you specify more than one output format, you need to specify output files"
   let o' = if null outs then o { text = Just "-" } else o
   return o'
