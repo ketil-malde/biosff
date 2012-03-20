@@ -25,6 +25,7 @@ module Bio.Sequence.SFF ( SFF(..), CommonHeader(..)
                         , packFlows, unpackFlows
                         , Flow, Qual, Index, SeqData, QualData
                         , ReadName (..), decodeReadName, encodeReadName
+                        , putRB, getRB
                         ) where
 
 import Bio.Core.Sequence
@@ -40,7 +41,7 @@ import Control.Monad (when,replicateM,replicateM_)
 
 import Data.List (intersperse)
 import Data.Binary
-import Data.Binary.Get (getByteString,getLazyByteString)
+import Data.Binary.Get (getByteString,getLazyByteString,runGetState)
 import qualified Data.Binary.Get as G
 import Data.Binary.Put (putByteString,putLazyByteString)
 import Data.Char (toUpper, toLower)
@@ -62,7 +63,20 @@ versions = [1]
 
 -- | Read an SFF file.
 readSFF :: FilePath -> IO SFF
-readSFF f = return . decode =<< LB.readFile f
+readSFF f = do
+  file <- LB.readFile f
+  let (header, remaining, _) = runGetState (get::Get CommonHeader) file 0
+      blocks = getBlocks header (fromIntegral $ num_reads header) remaining
+  return (SFF header blocks)
+
+getBlocks :: CommonHeader -> Int -> LB.ByteString -> [ReadBlock]
+getBlocks header n str
+  | n == 0 = []
+  | otherwise = case runGetState (getBlock $ fromIntegral $ flow_length $ header) str 0 of
+    (block, remaining, _) -> block : getBlocks header (n-1) remaining
+
+getBlock :: Int -> Get ReadBlock
+getBlock flows = get >>= getRB flows
 
 {-
 -- | Extract the read without the initial (TCAG) key.
@@ -227,7 +241,7 @@ instance Binary SFF where
       rds <- replicateM (fromIntegral (num_reads chead))
                                    (do 
                                       rh <- get :: Get ReadHeader
-                                      getRB chead rh
+                                      getRB (fromIntegral $ flow_length chead) rh
                                    )
       return (SFF chead rds)
 
@@ -237,11 +251,10 @@ instance Binary SFF where
 
 -- | Helper function for decoding a 'ReadBlock'.
 {-# INLINE getRB #-}
-getRB :: CommonHeader -> ReadHeader -> Get ReadBlock
-getRB chead rh = do
+getRB :: Int -> ReadHeader -> Get ReadBlock
+getRB fl rh = do
   let nb = fromIntegral $ num_bases rh
       nb' = fromIntegral $ num_bases rh
-      fl = fromIntegral $ flow_length chead
   fg <- getByteString (2*fl)
   fi <- getByteString nb
   bs <- getLazyByteString nb'
@@ -418,11 +431,11 @@ instance Binary RSFF where
       chead <- get
       -- Get the first read block
       r1 <- do rh <- get 
-               getRB chead rh
+               getRB (fromIntegral $ flow_length chead) rh
       -- Get subsequent read blocks
       rds <- replicateM (fromIntegral (num_reads chead))
                                    (do rh <- getSaneHeader (take 4 $ BC.unpack $ read_name $ read_header r1)
-                                       getRB chead rh)
+                                       getRB (fromIntegral $ flow_length chead) rh)
       return (RSFF $ SFF chead (r1:rds))
     put = error "You should not serialize an RSFF"
 
