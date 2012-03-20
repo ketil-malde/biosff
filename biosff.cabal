@@ -13,6 +13,15 @@ Category:            Bioinformatics
 Build-type:          Simple
 Cabal-version:       >=1.2
 
+Source-repository head
+  Type:     darcs
+  Location: http://malde.org/~ketil/biohaskell/biosff
+
+source-repository this
+  Type:     darcs
+  Location: http://malde.org/~ketil/biohaskell/biosff
+  Tag:      0.2
+
 Library
   Exposed-modules: Bio.Sequence.SFF
   Other-modules:   Bio.Sequence.SFF_name, Bio.Sequence.SFF_filters
