@@ -4,11 +4,12 @@ module Options where
 
 import System.Console.CmdArgs
 import Control.Monad (when)
-import Data.Maybe (isJust)
+import Data.Maybe (isJust, isNothing)
 
 data Opts = Opts 
             { trimKey :: Bool
             , trim    :: Bool
+            , plot    :: Bool
             , summarize :: Maybe FilePath
             , filters :: Maybe FilePath
             , info    :: Maybe FilePath
@@ -38,6 +39,7 @@ opts = Opts
   , flowgram = def  &= help "Output flowgram information in tabular form" &= typFile &= name "F" &= optdef
   , histogram = def &= help "Output histogram of flow values by nucleotide" &= typFile &= name "h" &= optdef
   , histpos   = def &= help "Output histogram of flow values by flow cycle" &= typFile &= name "H" &= optdef
+  , plot      = False &= help "Output gnuplot script for visualization"
   , text      = def &= help "Output SFF information as text (default)"    &= typFile &= name "T" &= optdef
   , inputs  = def &= args &= typFile
   } 
@@ -50,5 +52,6 @@ getArgs = do
   -- print o
   let outs = filter isJust $ map ($o) [summarize,filters,info,fasta,fqual,fastq,flowgram,histogram,histpos,text]
   when ((length $ filter (==Just "-") $ outs) > 1) $ error "If you specify more than one output format, you need to specify output files"
+  when (plot o && isNothing (histogram o)) $ error "Gnuplot output only supported for histograms"
   let o' = if null outs then o { text = Just "-" } else o
   return o'
