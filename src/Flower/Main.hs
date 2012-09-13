@@ -53,7 +53,7 @@ buildActions o = let
       on (O.fastq o)     (\h -> mapM_ (L1.hPut h . L1.concat . map toFastQ . tr . rs) =<< inp)
       on (O.summarize o) (\h -> mapM_ (L1.hPut h . summarize . tr . rs) =<< inp)  -- should we trim?
       on (O.filters o)   (\h -> mapM_ (L1.hPut h . sum_filters . rs) =<< inp)
-      on (O.histogram o) (\h -> mapM_ (\(SFF c r) -> hPutStrLn h . (if O.plot o then showPlot 1000 else showHist 9999)  ["A","C","G","T"] . histogram (B.unpack $ flow c) . map flowgram . tr $ r) =<< inp)
+      on (O.histogram o) (\h -> mapM_ (\(SFF c r) -> hPutStrLn h . (case O.plot o of Just str -> showPlot str 1000; Nothing -> showHist 9999)  ["A","C","G","T"] . histogram (B.unpack $ flow c) . map flowgram . tr $ r) =<< inp)
       on (O.histpos o)   (\h -> mapM_ (\(SFF _ r) -> hPutStrLn h . showHist 549 [] . histpos 549 . tr $ r) =<< inp)
       on (O.flowgram o)  (\h -> mapM_ (\(SFF c r) -> L1.hPut h . L1.fromChunks . intersperse (B.pack "\n") . concatMap (showread c) $ r) =<< inp)
 
@@ -242,8 +242,9 @@ histogram fl scores = runST $ do
   return [a',c',g',t']
 
 -- ouput a histogram in gnuplot format
-showPlot :: Int -> [String] -> [Hist] -> String
-showPlot mx hd hs = "set style data lines\nset logscale y\n\nplot "
+showPlot :: String -> Int -> [String] -> [Hist] -> String
+showPlot cmds mx hd hs = "set style data lines\nset logscale y\n\n"++cmds
+  ++"\n\nplot "
   ++ concat (intersperse "," [" '-' ti "++show c | c <- hd]) ++ "\n"
   ++ unlines [ unlines [showFFloat (Just 2) (fromIntegral sc/100::Double) ""++"\t"++show (h!sc) | sc <- [0..fromIntegral mx]] ++ "e\n" | h <- hs]
 
