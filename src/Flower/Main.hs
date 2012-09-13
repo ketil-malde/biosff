@@ -243,7 +243,7 @@ histogram fl scores = runST $ do
 
 -- ouput a histogram in gnuplot format
 showPlot :: String -> Int -> [String] -> [Hist] -> String
-showPlot cmds mx hd hs = "set style data lines\nset logscale y\n\n"++cmds
+showPlot cmds mx hd hs = "set style data lines\nset logscale y\nset xlabel 'Flow value'\nset ylabel 'Count'\nset xtic 1\n\n"++cmds
   ++"\n\nplot "
   ++ concat (intersperse "," [" '-' ti "++show c | c <- hd]) ++ "\n"
   ++ unlines [ unlines [showFFloat (Just 2) (fromIntegral sc/100::Double) ""++"\t"++show (h!sc) | sc <- [0..fromIntegral mx]] ++ "e\n" | h <- hs]
