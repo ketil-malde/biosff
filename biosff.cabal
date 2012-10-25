@@ -1,5 +1,5 @@
 Name:                biosff
-Version:             0.2
+Version:             0.3
 Synopsis:            Library and executables for working with SFF files
 Description:         The library contains the functionality for reading and writing
 		     SFF files (sequencing data from 454 and Ion Torrent).  It duplicates
@@ -23,8 +23,8 @@ source-repository this
   Tag:      0.2
 
 Library
-  Exposed-modules: Bio.Sequence.SFF
-  Other-modules:   Bio.Sequence.SFF_name, Bio.Sequence.SFF_filters
+  Exposed-modules: Bio.Sequence.SFF, Bio.Sequence.SFF_filters
+  Other-modules:   Bio.Sequence.SFF_name
   Build-depends:   base >= 3 && < 5, biocore >= 0.1, binary, bytestring, array
   Hs-Source-Dirs:  src
   Ghc-Options:     -Wall
