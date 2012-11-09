@@ -189,11 +189,13 @@ writeSFF' f (SFF hs rs) = do
 -- | Write 'ReadBlock's to a file handle.
 writeReads :: Handle -> Int -> [ReadBlock] -> IO Int32
 writeReads _ _ [] = return 0
-writeReads h i (r:rs) = do
-  LBC.hPut h $ encode (RBI i r)
-  c <- writeReads h i rs
-  return $! (c+1)
-
+writeReads h i xs = go 0 xs
+  where go c (r:rs) = do
+          LBC.hPut h $ encode (RBI i r)
+          let c' = c+1
+          c' `seq` go c' rs
+        go c [] = return c
+        
 data RBI = RBI Int ReadBlock
 
 -- | Wrapper for ReadBlocks since they need additional information
