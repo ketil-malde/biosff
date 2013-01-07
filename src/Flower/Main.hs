@@ -5,7 +5,7 @@ import Bio.Sequence.SFF
 import Bio.Sequence.SFF_filters
 import Bio.Core
 
-import Print
+import Print as P
 import Text.Printf
 
 import System.IO (stdout, Handle, openFile, IOMode(..), hClose, hPutStrLn)
@@ -123,7 +123,7 @@ getHeader h = unlines ["Index:    \t" ++ show (index_offset h,index_length h)
 summarize :: [ReadBlock] -> L.ByteString
 summarize rs = do
   L.concat [ L.pack "# name........\tdate......\ttime....\treg\ttrim_l\ttrim_r\tx_loc\ty_loc\tlen\tK2\ttrimK2\tncount\tavgQ\ttravgQ\n"
-           , toLazyByteString . mconcat . map sum1 $ rs]
+           , P.toLazyByteString . mconcat . map sum1 $ rs]
 
 -- todo: date and time are usually constants!
 sum1 :: ReadBlock -> Builder
@@ -144,10 +144,10 @@ sum1 r = let rh = read_header r
              avg_qual qs = let l = fromIntegral (L1.length qs)
                            in if l>0 then putFix 2 $ sum (map fromIntegral $ L1.unpack qs) * 100 `div` l
                              else putFix 2 0
-         in mconcat $ intersperse tb ([fromByteString h]
+         in mconcat $ intersperse tb ([P.fromByteString h]
                      ++ rndec1 ++ [putInt (fromIntegral qleft), putInt (fromIntegral qright)] ++ rndec2 
                      ++ [putInt (fromIntegral nb)
-                        , fromByteString (fi $ quals $ flowgram r), fromByteString (fi $ quals $ flowgram tr)
+                        , P.fromByteString (fi $ quals $ flowgram r), P.fromByteString (fi $ quals $ flowgram tr)
                         , putInt (n_count r)
                         , avg_qual $ unQD $ quality r, avg_qual $ unQD $ quality tr]) ++ [nl]
 
@@ -155,9 +155,9 @@ sum1 r = let rh = read_header r
 -- The --filters option, summarize filters
 -- ----------------------------------------------------------
 sum_filters ::  [ReadBlock] -> L1.ByteString
-sum_filters rs = toLazyByteString $ mconcat (header:map sumf1 rs)
+sum_filters rs = P.toLazyByteString $ mconcat (header:map sumf1 rs)
   where 
-    header = fromByteString $ B.pack "# name..... \tlength \tl_trim \tr_trim \tE K D M L\tSig Q20 Adp\n"
+    header = P.fromByteString $ B.pack "# name..... \tlength \tl_trim \tr_trim \tE K D M L\tSig Q20 Adp\n"
     sumf1 rb = let
       rh = read_header rb
       rn = read_name rh
@@ -168,7 +168,7 @@ sum_filters rs = toLazyByteString $ mconcat (header:map sumf1 rs)
             [discard_empty, discard_key "tcag", discard_dots 0.05, discard_mixed, discard_length 186]
       tfs = mconcat $ intersperse (char ' ') $ map (\f -> putInt3 (f rb))
             [sigint, qual20 10, find_primer rapid_adapter]
-      in mconcat (intersperse (char '\t') [fromByteString rn, putInt nb, putInt cl, putInt cr, dfs, tfs]++[char '\n'])
+      in mconcat (intersperse (char '\t') [P.fromByteString rn, putInt nb, putInt cl, putInt cr, dfs, tfs]++[char '\n'])
 
 -- ----------------------------------------------------------
 -- The -F option: Output the sequence of flows, one flow per line
