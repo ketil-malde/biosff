@@ -88,7 +88,15 @@ trimKey ch (Seq n s q) = let (k,s2) = LB.splitAt (fromIntegral $ key_length ch) 
 -}
 
 instance BioSeq ReadBlock where
-  seqlabel rb = SeqLabel $ LB.fromChunks [read_name $ read_header rb]
+  seqid rb = SeqLabel $ LB.fromChunks [read_name $ read_header rb]
+  seqheader rb = hdr
+    where n = read_name $ read_header rb
+          hdr = case decodeReadName n of
+            Just h -> SeqLabel $ LBC.unwords 
+                      [LB.fromChunks [n], LBC.pack $ show $ date h
+                      ,LBC.pack $ show $ time h, LBC.pack $ show $ region h
+                      ,LBC.pack $ (show (x_loc h) ++ ":"++show (y_loc h))]
+            Nothing -> seqid rb
   seqdata  rb = let h = read_header rb
                     (left,right) = (clip_qual_left h, clip_qual_right h)
                     (a,b) = LB.splitAt (fromIntegral right) $ unSD $ bases rb
