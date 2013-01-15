@@ -1,5 +1,5 @@
 Name:                biosff
-Version:             0.3.2
+Version:             0.3.3
 Synopsis:            Library and executables for working with SFF files
 Description:         The library contains the functionality for reading and writing
 		     SFF files (sequencing data from 454 and Ion Torrent).  It duplicates
@@ -17,10 +17,14 @@ Source-repository head
   Type:     darcs
   Location: http://malde.org/~ketil/biohaskell/biosff
 
-source-repository this
+Source-repository this
   Type:     darcs
   Location: http://malde.org/~ketil/biohaskell/biosff
-  Tag:      0.2
+  Tag:      0.3.3
+
+Flag flower
+  Description: Build the 'flower' executable.
+  Default:     True
 
 Library
   Exposed-modules: Bio.Sequence.SFF, Bio.Sequence.SFF_filters
@@ -31,8 +35,12 @@ Library
 
 Executable flower
   Main-Is:         Main.hs
+  if flag(flower)
+     Buildable:  True
+  else
+     Buildable:  False
   Other-Modules:   Fork, Options, Metrics, Print
-  Build-Depends:   base >= 3 && < 5, cmdargs, mtl >= 2
+  Build-Depends:   base >= 3 && < 5, cmdargs, mtl >= 2, array >= 0.4
   Hs-Source-Dirs:  src, src/Flower
   Ghc-Options:     -Wall
 

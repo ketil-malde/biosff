@@ -3,7 +3,7 @@ module Main (main) where
 
 import Bio.Sequence.SFF
 import Bio.Sequence.SFF_filters
-import Bio.Core
+import Bio.Core hiding (toText)
 
 import Print as P
 import Text.Printf

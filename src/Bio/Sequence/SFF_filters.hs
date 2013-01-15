@@ -122,6 +122,8 @@ clipSeq rb n' = let n = fromIntegral n'
 
 -- These are used for mate-pair libraries, should be located around the middle of the read:
 
+flx_linker, ti_linker, rna_adapter, rna_adapter2, rna_adapter3, rapid_adapter, ti_adapter_b :: String
+
 flx_linker = "GTTGGAACCGAAAGGGTTTGAATTCAAACCCTTTCGGTTCCAAC"  -- Celera
 ti_linker  = "TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG"  -- 20K cod jump
 
