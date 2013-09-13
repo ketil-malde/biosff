@@ -1,11 +1,12 @@
 Name:                biosff
-Version:             0.3.4
+Version:             0.3.5
 Synopsis:            Library and executables for working with SFF files
 Description:         The library contains the functionality for reading and writing
 		     SFF files (sequencing data from 454 and Ion Torrent).  It duplicates
 		     code from (and is incompatible with) the "bio" library.
 Homepage:            http://biohaskell.org/
 License:             LGPL-2.1
+License-file:        COPYING
 Author:              Ketil Malde
 Maintainer:          ketil@malde.org
 Stability:           Experimental
