@@ -27,6 +27,10 @@ Flag flower
   Description: Build the 'flower' executable.
   Default:     True
 
+Flag frecover
+  Description: Build the 'frecover' executable.
+  Default:     True
+
 Library
   Exposed-modules: Bio.Sequence.SFF, Bio.Sequence.SFF_filters
   Other-modules:   Bio.Sequence.SFF_name
@@ -45,6 +49,13 @@ Executable flower
   Hs-Source-Dirs:  src, src/Flower
   Ghc-Options:     -Wall
 
--- Executable flowt
+Executable frecover
+  Main-Is:         Main.hs
+  if flag(frecover)
+     Buildable:  True
+  else
+     Buildable:  False
+  Build-Depends:   base >= 3 && < 5
+  Hs-Source-Dirs:  src, src/FRecover
+  Ghc-Options:     -Wall
 
--- Executable flowselect  
