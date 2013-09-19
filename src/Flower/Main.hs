@@ -74,9 +74,9 @@ mkTrimmer o = case (O.trimKey o, O.trim o, O.trimAdapter o) of
         _ -> error "Please specify only one of --trim, --trimAdapter, and --trimkey"
 
 trimAdapter :: Trimmer
-trimAdapter r = trimFromTo (clip_adapter_left rh) (clip_adapter_right rh) r
+trimAdapter r = trimFromTo (clip_adapter_left rh) (if car == 0 then fromIntegral (num_bases rh) else car) r
   where rh = read_header r
-
+        car = clip_adapter_right rh
 -- ------------------------------------------------------------
 -- No option - dump as text format
 -- ------------------------------------------------------------
