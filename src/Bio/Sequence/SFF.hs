@@ -150,11 +150,12 @@ trimFromTo x r rd = let
   padding = B.replicate (B.length (flow_data rd) - B.length new_flw) 0
   rh = read_header rd
   [r',l'] = map fromIntegral [r,l]
-  rh' = rh { num_bases = fromIntegral (r'-l')
-           , clip_qual_left = max 0 $ clip_qual_left rh-l'
-           , clip_qual_right = min (clip_qual_right rh-l') (r'-l'+1)
-           , clip_adapter_left = max 0 $ clip_adapter_left rh-l'
-           , clip_adapter_right = min (clip_adapter_right rh-l') (r'-l'+1)
+  numbs = max 0 $ r'-l'
+  rh' = rh { num_bases = fromIntegral numbs
+           , clip_qual_left     = min numbs $ max 0 $ clip_qual_left rh-l'
+           , clip_qual_right    = max 0 $ min (clip_qual_right rh-l') (r'-l'+1)
+           , clip_adapter_left  = min numbs $ max 0 $ clip_adapter_left rh-l'
+           , clip_adapter_right = max 0 $ min (clip_adapter_right rh-l') (r'-l'+1)
            }
   in rd { read_header = rh'
         , flow_data = B.concat [new_flw, padding]
