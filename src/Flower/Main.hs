@@ -85,7 +85,7 @@ dumpText rs = concat . map toText $ rs
   where toText :: ReadBlock -> String
         toText r = concat [ gt, B.unpack (read_name rh), nl
                           , maybe "" ((\s->info++s++nl) . formatRN) $ decodeReadName (read_name rh)
-                          , let (lf,rt) = (clip_adapter_right rh, clip_adapter_left rh) 
+                          , let (lf,rt) = (clip_adapter_left rh, clip_adapter_right rh) 
                             in if lf /= 0 || rt /= 0 then adapter ++ show lf ++ sp++ show rt ++ nl else ""
                           , clip,     show (clip_qual_left rh), sp, show (clip_qual_right rh), nl
                           , flows,    B.unpack $ B.unwords $ map fi $ flowgram r, nl
