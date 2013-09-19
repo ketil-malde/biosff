@@ -69,7 +69,7 @@ mkTrimmer :: Opts -> Trimmer
 mkTrimmer o = case (O.trimKey o, O.trim o, O.trimAdapter o) of
         (True,False,False) -> \r -> trimFromTo 5 (num_bases $ read_header r) r
         (False,True,False) -> trim
-        (False,True,False) -> trimAdapter        
+        (False,False,True) -> trimAdapter        
         (False,False,False) -> id
         _ -> error "Please specify only one of --trim, --trimAdapter, and --trimkey"
 
@@ -86,7 +86,7 @@ dumpText rs = concat . map toText $ rs
         toText r = concat [ gt, B.unpack (read_name rh), nl
                           , maybe "" ((\s->info++s++nl) . formatRN) $ decodeReadName (read_name rh)
                           , let (lf,rt) = (clip_adapter_right rh, clip_adapter_left rh) 
-                            in if lf /= 0 || rt /= 0 then adapter ++ show lf ++ sp++ show rt else ""
+                            in if lf /= 0 || rt /= 0 then adapter ++ show lf ++ sp++ show rt ++ nl else ""
                           , clip,     show (clip_qual_left rh), sp, show (clip_qual_right rh), nl
                           , flows,    B.unpack $ B.unwords $ map fi $ flowgram r, nl
                           , idx,      unwords $ map show $ cumulative_index' r, nl
