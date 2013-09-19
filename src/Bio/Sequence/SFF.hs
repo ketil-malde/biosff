@@ -154,7 +154,8 @@ trimFromTo x r rd = let
   rh' = rh { num_bases = fromIntegral numbs
            , clip_qual_left     = min numbs $ max 0 $ clip_qual_left rh-l'
            , clip_qual_right    = max 0 $ min (clip_qual_right rh-l') (r'-l'+1)
-           , clip_adapter_left  = min numbs $ max 0 $ clip_adapter_left rh-l'
+           , clip_adapter_left  = (\e -> if e==1 then 0 else e) -- clip of one means no clip
+                                        $ min numbs $ max 0 $ clip_adapter_left rh-l'
            , clip_adapter_right = max 0 $ min (clip_adapter_right rh-l') (r'-l'+1)
            }
   in rd { read_header = rh'
