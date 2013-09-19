@@ -8,6 +8,7 @@ import Data.Maybe (isJust, isNothing)
 
 data Opts = Opts 
             { trimKey :: Bool
+            , trimAdapter :: Bool
             , trim    :: Bool
             , plot    :: Maybe String
             , summarize :: Maybe FilePath
@@ -30,6 +31,7 @@ opts :: Opts
 opts = Opts
   { trimKey = False &= help "Trim only the TCAG key sequence"
   , trim    = False &= help "Trim quality using clipping information"     &= name "t"
+  , trimAdapter = False &= help "Trim quality using clipping information"     &= name "a"
   , summarize = def   &= help "Output per sequence summary information"   &= typFile &= optdef
   , filters   = def   &= help "Output filtering information"              &= typFile &= optdef
   , info    = def   &= help "Output brief overview of the contents"       &= typFile &= optdef

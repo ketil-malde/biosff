@@ -66,11 +66,16 @@ on (Just f) act = modify $ (:) $ case f of
             hClose h
 
 mkTrimmer :: Opts -> Trimmer
-mkTrimmer o = case (O.trimKey o, O.trim o) of
-        (True,True) -> error "Please specify only one of --trim and --trimkey"
-        (True,False) -> \r -> trimFromTo 5 (num_bases $ read_header r) r
-        (False,True) -> trim
-        (False,False) -> id
+mkTrimmer o = case (O.trimKey o, O.trim o, O.trimAdapter o) of
+        (True,False,False) -> \r -> trimFromTo 5 (num_bases $ read_header r) r
+        (False,True,False) -> trim
+        (False,True,False) -> trimAdapter        
+        (False,False,False) -> id
+        _ -> error "Please specify only one of --trim, --trimAdapter, and --trimkey"
+
+trimAdapter :: Trimmer
+trimAdapter r = trimFromTo (clip_adapter_left rh) (clip_adapter_right rh) r
+  where rh = read_header r
 
 -- ------------------------------------------------------------
 -- No option - dump as text format
