@@ -10,6 +10,7 @@ data Opts = Opts
             { trimKey :: Bool
             , trimAdapter :: Bool
             , trim    :: Bool
+            , filterEmpty :: Bool
             , plot    :: Maybe String
             , summarize :: Maybe FilePath
             , filters :: Maybe FilePath
@@ -32,6 +33,7 @@ opts = Opts
   { trimKey = False &= help "Trim only the TCAG key sequence"
   , trim    = False &= help "Trim quality using clipping information"     &= name "t"
   , trimAdapter = False &= help "Trim quality using adapter information"     &= name "a"
+  , filterEmpty = False &= help "Remove reads that are empty after trimming" &= name "E"
   , summarize = def   &= help "Output per sequence summary information"   &= typFile &= optdef
   , filters   = def   &= help "Output filtering information"              &= typFile &= optdef
   , info    = def   &= help "Output brief overview of the contents"       &= typFile &= optdef

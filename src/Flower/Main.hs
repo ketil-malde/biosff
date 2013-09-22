@@ -41,7 +41,8 @@ type Action  = IO ()
 buildActions :: Opts -> [Action]
 buildActions o = let
     inp = mapM readSFF (O.inputs o)
-    tr = map (mkTrimmer o)
+    tr = if O.filterEmpty o then filter (\r -> (num_bases (read_header r)) > 0) else id 
+         . map (mkTrimmer o)
     ch (SFF h _) = h
     rs (SFF _ r) = r
     in snd $ flip runState [] $ do
@@ -71,6 +72,9 @@ mkTrimmer o = case (O.trimKey o, O.trim o, O.trimAdapter o) of
         (False,False,True) -> trimAdapter        
         (False,False,False) -> id
         _ -> error "Please specify only one of --trim, --trimAdapter, and --trimkey"
+
+isEmpty r = True
+
 
 -- ------------------------------------------------------------
 -- No option - dump as text format
