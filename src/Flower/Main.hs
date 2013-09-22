@@ -37,7 +37,6 @@ main = do
   forkAndWait $ buildActions opts
 
 type Action  = IO ()
-type Trimmer = ReadBlock -> ReadBlock
 
 buildActions :: Opts -> [Action]
 buildActions o = let
@@ -65,18 +64,14 @@ on (Just f) act = modify $ (:) $ case f of
             act h
             hClose h
 
-mkTrimmer :: Opts -> Trimmer
+mkTrimmer :: Opts -> (ReadBlock -> ReadBlock)
 mkTrimmer o = case (O.trimKey o, O.trim o, O.trimAdapter o) of
-        (True,False,False) -> \r -> trimFromTo 5 (num_bases $ read_header r) r
+        (True,False,False) -> trimKey
         (False,True,False) -> trim
         (False,False,True) -> trimAdapter        
         (False,False,False) -> id
         _ -> error "Please specify only one of --trim, --trimAdapter, and --trimkey"
 
-trimAdapter :: Trimmer
-trimAdapter r = trimFromTo (clip_adapter_left rh) (if car == 0 then fromIntegral (num_bases rh) else car) r
-  where rh = read_header r
-        car = clip_adapter_right rh
 -- ------------------------------------------------------------
 -- No option - dump as text format
 -- ------------------------------------------------------------

@@ -17,7 +17,7 @@ module Bio.Sequence.SFF ( SFF(..), CommonHeader(..)
                         , ReadHeader(..), ReadBlock(..)
                         , readSFF, writeSFF, writeSFF', recoverSFF
                         -- , sffToSequence, rbToSequence
-                        , trim, trimFromTo -- , trimKey
+                        , trim, trimFromTo, trimKey, trimAdapter
                         , baseToFlowPos, flowToBasePos
                         , trimFlows
                         , test, convert, flowgram
@@ -168,6 +168,16 @@ trimFromTo x r rd = let
 -- | Trim a read according to clipping information
 trim :: ReadBlock -> ReadBlock
 trim rb = let rh = read_header rb in trimFromTo (clip_qual_left rh) (clip_qual_right rh) rb
+
+-- | Trim adapters from a read
+trimAdapter :: ReadBlock -> ReadBlock
+trimAdapter r = trimFromTo (clip_adapter_left rh) (if car == 0 then fromIntegral (num_bases rh) else car) r
+  where rh = read_header r
+        car = clip_adapter_right rh
+
+-- | Trim the key (i.e. first four bases)
+trimKey :: ReadBlock -> ReadBlock
+trimKey r = trimFromTo 5 (num_bases $ read_header r) r
 
 -- | Convert a flow position to the corresponding sequence position
 flowToBasePos :: Integral i => ReadBlock -> i -> Int
