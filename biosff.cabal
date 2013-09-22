@@ -31,6 +31,10 @@ Flag frecover
   Description: Build the 'frecover' executable.
   Default:     True
 
+Flag fclip
+  Description: Build the 'fclip' executable.
+  Default:     True
+
 Library
   Exposed-modules: Bio.Sequence.SFF, Bio.Sequence.SFF_filters
   Other-modules:   Bio.Sequence.SFF_name
@@ -57,5 +61,15 @@ Executable frecover
      Buildable:  False
   Build-Depends:   base >= 3 && < 5
   Hs-Source-Dirs:  src, src/FRecover
+  Ghc-Options:     -Wall
+
+Executable fclip
+  Main-Is:         Main.hs
+  if flag(fclip)
+     Buildable:  True
+  else
+     Buildable:  False
+  Build-Depends:   base >= 3 && < 5
+  Hs-Source-Dirs:  src, src/FClip
   Ghc-Options:     -Wall
 
