@@ -1,5 +1,5 @@
 Name:                biosff
-Version:             0.3.6
+Version:             0.3.7
 Synopsis:            Library and executables for working with SFF files
 Description:         The library contains the functionality for reading and writing
 		     SFF files (sequencing data from 454 and Ion Torrent).  It duplicates
