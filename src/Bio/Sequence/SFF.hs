@@ -151,12 +151,13 @@ trimFromTo x r rd = let
   rh = read_header rd
   [r',l'] = map fromIntegral [r,l]
   numbs = max 0 $ r'-l'
+  oneToZero e = if e==1 then 0 else e      -- clip of one means no clip
+  nToZero  e = if e >= numbs then 0 else e -- clip more than numbs means no clip
   rh' = rh { num_bases = fromIntegral numbs
-           , clip_qual_left     = min numbs $ max 0 $ clip_qual_left rh-l'
-           , clip_qual_right    = max 0 $ min (clip_qual_right rh-l') (r'-l'+1)
-           , clip_adapter_left  = (\e -> if e==1 then 0 else e) -- clip of one means no clip
-                                        $ min numbs $ max 0 $ clip_adapter_left rh-l'
-           , clip_adapter_right = max 0 $ min (clip_adapter_right rh-l') (r'-l'+1)
+           , clip_qual_left     = oneToZero $ min numbs $ max 0 $ clip_qual_left rh-l'
+           , clip_qual_right    = nToZero   $ max 0 $ min (clip_qual_right rh-l') (r'-l'+1)
+           , clip_adapter_left  = oneToZero $ min numbs $ max 0 $ clip_adapter_left rh-l'
+           , clip_adapter_right = nToZero   $ max 0 $ min (clip_adapter_right rh-l') (r'-l'+1)
            }
   in rd { read_header = rh'
         , flow_data = B.concat [new_flw, padding]
