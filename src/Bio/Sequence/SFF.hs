@@ -361,7 +361,7 @@ instance Binary CommonHeader where
              ; return (CommonHeader io ixl nrd kl fl fmt fw k)
              }
 
-    put ch = let CommonHeader io il nr kl fl fmt f k = ch { index_offset = 0 } in
+    put ch = let CommonHeader io il nr kl fl fmt f k = ch { index_offset = 0, index_length = 0 } in
         do { let cl = 31+fl+kl
                  l = cl `mod` 8
                  padding = if l > 0 then 8-l else 0

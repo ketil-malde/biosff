@@ -12,7 +12,8 @@ main = do
   SFF h rs <- readSFF $ O.input o
   let t = buildTrim o
       f = if O.filterEmpty o then filter (\r -> (num_bases (read_header r)) > 0) else id
-  writeSFF (O.output o) (SFF h $ f $ map t rs) 
+  _ <- writeSFF' (O.output o) (SFF h $ f $ map t rs) 
+  return ()
 
 buildTrim :: O.Opts -> (ReadBlock -> ReadBlock)
 buildTrim o = if O.trimKey o then trimKey else id
