@@ -47,7 +47,7 @@ opts = Opts
   , text      = def &= help "Output SFF information as text (default)"    &= typFile &= name "T" &= optdef
   , inputs  = def &= args &= typFile
   } 
-  &= summary "flower (biosff v0.3.7) - Extract information from SFF files" 
+  &= summary "flower (biosff v0.3.7.1) - Extract information from SFF files" 
   &= program "flower"
 
 getArgs :: IO Opts

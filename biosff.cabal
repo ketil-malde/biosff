@@ -21,7 +21,7 @@ Source-repository head
 Source-repository this
   Type:     darcs
   Location: http://malde.org/~ketil/biohaskell/biosff
-  Tag:      0.3.7
+  Tag:      0.3.7.1
 
 Flag flower
   Description: Build the 'flower' executable.

@@ -22,7 +22,7 @@ opts = Opts
   , output = def &= help "SFF file to write" &= name "o"
   , input  = def &= args &= typFile
   } 
-  &= summary "fclip (biosff v0.3.7) - Extract information from SFF files" 
+  &= summary "fclip (biosff v0.3.7.1) - Extract information from SFF files" 
   &= program "fclip"
 
 getArgs :: IO Opts
