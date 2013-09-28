@@ -1,5 +1,5 @@
 Name:                biosff
-Version:             0.3.7
+Version:             0.3.7.1
 Synopsis:            Library and executables for working with SFF files
 Description:         The library contains the functionality for reading and writing
 		     SFF files (sequencing data from 454 and Ion Torrent).  It duplicates
@@ -65,6 +65,7 @@ Executable frecover
 
 Executable fclip
   Main-Is:         Main.hs
+  Other-Modules:   Options
   if flag(fclip)
      Buildable:  True
   else
