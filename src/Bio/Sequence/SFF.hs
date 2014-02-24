@@ -188,10 +188,6 @@ flowToBasePos rd fp = length $ takeWhile (<=fp) $ scanl (+) 0 $ map fromIntegral
 baseToFlowPos :: Integral i => ReadBlock -> i -> Int
 baseToFlowPos rd sp = sum $ map fromIntegral $ B.unpack $ B.take (fromIntegral sp) $ flow_index rd
 
--- | Read an SFF file, but be resilient against errors.
-recoverSFF :: FilePath -> IO SFF
-recoverSFF f = return . unRecovered . decode =<< LB.readFile f
-
 -- | Write an 'SFF' to the specified file name
 writeSFF :: FilePath -> SFF -> IO ()
 writeSFF = encodeFile
@@ -448,21 +444,32 @@ instance Show ReadBlock where
 
 -- ------------------------------------------------------------
 -- | RSFF wraps an SFF to provide an instance of Binary with some more error checking.
-data RSFF = RSFF { unRecovered :: SFF }
 
-instance Binary RSFF where 
-    get = do
-      -- Parse CommonHeader
-      chead <- get
-      -- Get the first read block
-      r1 <- do rh <- get 
-               getRB (fromIntegral $ flow_length chead) rh
-      -- Get subsequent read blocks
-      rds <- replicateM (fromIntegral (num_reads chead))
-                                   (do rh <- getSaneHeader (take 4 $ BC.unpack $ read_name $ read_header r1)
-                                       getRB (fromIntegral $ flow_length chead) rh)
-      return (RSFF $ SFF chead (r1:rds))
-    put = error "You should not serialize an RSFF"
+-- | Read an SFF file, but be resilient against errors.
+
+recoverSFF :: FilePath -> IO SFF
+recoverSFF f = do 
+  file <- LB.readFile f
+  let (header, remaining1, _) = runGetState (get::Get CommonHeader) file 0
+      (b1,remaining2,_) = runGetState get_first remaining1 0
+      get_first = do
+        rh <- get :: Get ReadHeader
+        getRB (fromIntegral $ flow_length header) rh
+      name = take 4 $ BC.unpack $ read_name $ read_header b1
+      blocks = recoverBlocks header name (fromIntegral $ num_reads header) remaining2
+  return (SFF header (b1:blocks))
+  
+recoverBlocks :: CommonHeader -> String -> Int -> LB.ByteString -> [ReadBlock]
+recoverBlocks header name n str
+  | n == 0 = []
+  | otherwise = case runGetState (recoverBlock name flows) str 0 of
+    (block, remaining, _) -> block : recoverBlocks header name (n-1) remaining
+    where flows = fromIntegral $ flow_length $ header
+
+recoverBlock :: String -> Int -> Get ReadBlock
+recoverBlock name flows = do 
+  rh <- getSaneHeader name
+  getRB flows rh
 
 -- | This allows us to decode the constant parts of the read header for verifying its correcness.
 data PartialReadHeader = PartialReadHeader {
